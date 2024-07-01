@@ -1,0 +1,63 @@
+TODO:
+x new vertical segmented bar
+x new horizontal segmented bar
+x rounded bar but fills better
+x horizontal rounded bar
+x vertical rounded bar
+x left circular rounded bar
+x right circular rounded bar
+x control to change the current speed
+x control to change the max speed
+x control to change the speed limit
+x make it so I don't have to wrap rounded draws in save/restore
+x make the inner speed limit white part a bit taller
+x add a background to the vertical segmented bar
+x horizontal
+x left circular
+x right circular
+x regular horizontal
+x regular vertical
+x left circular segmented
+x right circular segmented
+x make a non-split steering bar and forget about the split one (I can still leave the code there though)
+x separate the top/bottom and left/right bar styles logically
+x control each of the eight bars individually
+x color the bars green or red
+x add ui selector for new position options
+x hook it up to the javascript
+x make the javascript draw according to the selection
+x prevent selecting steering style during a top/bottom arrangement
+x make the red/green colors apply correctly regardless of the arrangement
+x make the green/red lighter
+x use the same width for all the controls labels
+x powered by vanilla.js
+x make a circular bar around the top right logo
+x move the bars in when the current speed is two or fewer digits
+x make the fill handle aligned better on Brave specifically
+note at the top of the screen that it's designed to display the screen at native resolution
+try getting the controls to appear to the right, rather than below?
+make all my components draggable?
+figure out the right bWidth, it's certainly not 1000?
+proper resolution scaling?
+steering wheel diagram?
+make a change log display?
+apply smoothing to the bar movement?
+
+What options do I want the user to have?
+Toggle the two throttle bars being together on the same side, or being on opposite sides
+  there are two ways to be on the same side, one way to be on the opposite side
+Toggle of the throttle bars are on left/right or top/bottom
+  there are only two reasonable options for top/bottom in general
+Rotate between all the different styles for the throttle bars
+Toggle the colors of the throttles - actually no, they're colored that way for a reason
+Position the steering bar automatically
+
+Position options:
+two on the left
+one on each side
+two on the right
+two on the top
+two on the bottom
+
+When I switch between a left/right position to a top/bottom one, I'll have to map the
+style, since the two have different sets of styles
