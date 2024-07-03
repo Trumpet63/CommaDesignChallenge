@@ -67,45 +67,51 @@ function onNextArrangementClicked() {
 
 function onPreviousStyleClicked() {
     let styleList;
-    let listLength;
     if (generalArrangementIndex <= 2) {
         styleList = leftRightStylesList;
-        listLength = leftRightStylesList.length;
     } else {
         styleList = topBottomStylesList;
-        listLength = topBottomStylesList.length - 1;
     }
 
     let currentStyleIndex = styleList.indexOf(generalStyle);
     currentStyleIndex--;
     if (currentStyleIndex < 0) {
-        currentStyleIndex = listLength - 1;
+        currentStyleIndex = styleList.length - 1;
     }
     let currentStyle = styleList[currentStyleIndex];
     generalStyle = currentStyle;
 
     let output = document.getElementById("generalStyle");
     output.innerText = currentStyle;
+
+    if (currentStyleIndex < 3) {
+        steeringStyle = topBottomStylesList[currentStyleIndex];
+    } else {
+        steeringStyle = topBottomStylesList[0]
+    }
 }
 
 function onNextStyleClicked() {
     let styleList;
-    let listLength;
     if (generalArrangementIndex <= 2) {
         styleList = leftRightStylesList;
-        listLength = leftRightStylesList.length;
     } else {
         styleList = topBottomStylesList;
-        listLength = topBottomStylesList.length - 1;
     }
 
     let currentStyleIndex = styleList.indexOf(generalStyle);
-    currentStyleIndex = (currentStyleIndex + 1) % listLength;
+    currentStyleIndex = (currentStyleIndex + 1) % styleList.length;
     let currentStyle = styleList[currentStyleIndex];
     generalStyle = currentStyle;
 
     let output = document.getElementById("generalStyle");
     output.innerText = currentStyle;
+
+    if (currentStyleIndex < 3) {
+        steeringStyle = topBottomStylesList[currentStyleIndex];
+    } else {
+        steeringStyle = topBottomStylesList[0]
+    }
 }
 
 let LeftRightStyles = {
@@ -134,13 +140,11 @@ let TopBottomStyles = {
     STRAIGHT: "Straight",
     STRAIGHT_ROUNDED: "Straight Rounded",
     STRAIGHT_SEGMENTED: "Straight Segmented",
-    STEERING: "Steering",
 };
 let topBottomStylesList = [
     TopBottomStyles.STRAIGHT,
     TopBottomStyles.STRAIGHT_ROUNDED,
     TopBottomStyles.STRAIGHT_SEGMENTED,
-    TopBottomStyles.STEERING,
 ];
 let top1Style = LeftRightStyles.STRAIGHT_ROUNDED;
 let top2Style = LeftRightStyles.STRAIGHT_ROUNDED;
@@ -150,6 +154,7 @@ let topBottomStyle = TopBottomStyles.STRAIGHT_ROUNDED;
 
 let generalArrangementIndex = 0;
 let generalStyle = LeftRightStyles.STRAIGHT_ROUNDED;
+let steeringStyle = TopBottomStyles.STRAIGHT_ROUNDED;
 
 let brakeFill = "rgb(255, 120, 120)";
 let throttleFill = "rgb(80, 255, 120)"
@@ -197,20 +202,40 @@ let radiusAroundCurrentSpeed = 146;
 let topRightLogoCenter = {x: width - 187, y: 189};
 let radiusAroundTopRightLogo = 126;
 
-let imagesLoaded = false;
+let iconSize = 32;
+function loadImage(imageSource) {
+    return new Promise((resolve) => {
+        let canvas = document.createElement("canvas");
+        canvas.width = iconSize;
+        canvas.height = iconSize;
+        let canvasCtx = canvas.getContext("2d");
+        let image = new Image(iconSize, iconSize);
+        image.onload = () => {
+            canvasCtx.drawImage(image, 0, 0);
+            resolve(canvas);
+        };
+        image.src = imageSource;
+    });
+}
 
-// Load steering wheel image
-let steeringWheelCanvas = document.createElement("canvas");
-steeringWheelCanvas.width = 32;
-steeringWheelCanvas.height = 32;
-let wheelCtx = steeringWheelCanvas.getContext("2d");
-let steeringWheelImage = new Image(32, 32);
-steeringWheelImage.onload = () => {
-    wheelCtx.drawImage(steeringWheelImage, 0, 0);
+let imagesLoaded = false;
+let steeringWheelCanvas;
+let discBrakeCanvas;
+let speedometerCanvas;
+let brainCanvas;
+Promise.all([
+    loadImage("steering_wheel_icon.png"),
+    loadImage("disc_brake_icon.png"),
+    loadImage("speedometer_icon_v2.png"),
+    loadImage("brain_icon.png"),
+]).then((canvases) => {
     imagesLoaded = true;
-    console.log("loaded");
-};
-steeringWheelImage.src = "steering_wheel_icon.png";
+    steeringWheelCanvas = canvases[0];
+    discBrakeCanvas = canvases[1];
+    speedometerCanvas = canvases[2];
+    brainCanvas = canvases[3];
+});
+
 
 let mouseX = 0;
 let mouseY = 0;
@@ -300,7 +325,7 @@ function draw(currentTimeMillis) {
     // ctx.arc(topRightLogoCenter.x, topRightLogoCenter.y, radiusAroundTopRightLogo, 0, 2 * Math.PI);
     // ctx.stroke();
 
-    drawTopRightLogoBar(28, 160, topRightLogoCenter.x, topRightLogoCenter.y, fillRatioAbs, radiusAroundTopRightLogo, "white");
+    drawTopRightLogoBar(28, topRightLogoCenter.x, topRightLogoCenter.y, fillRatioAbs, radiusAroundTopRightLogo, "white");
 
     let h = 180;
     let w = 28;
@@ -319,19 +344,19 @@ function draw(currentTimeMillis) {
     switch (generalArrangementIndex) {
         case 0:
             // two on the left
-            drawTopBottomUIElement(fillRatioAbs, top1Location, TopBottomStyles.STEERING, steeringFill);
+            drawTopBottomUIElement(fillRatioAbs, top1Location, steeringStyle, steeringFill);
             drawLeftRightUIElement(fillRatioAbs, left1Location, generalStyle, true, throttleFill);
             drawLeftRightUIElement(fillRatioAbs, left2Location, generalStyle, true, brakeFill);
             break;
         case 1:
             // one on each side
-            drawTopBottomUIElement(fillRatioAbs, top1Location, TopBottomStyles.STEERING, steeringFill);
+            drawTopBottomUIElement(fillRatioAbs, top1Location, steeringStyle, steeringFill);
             drawLeftRightUIElement(fillRatioAbs, left1Location, generalStyle, true, brakeFill);
             drawLeftRightUIElement(fillRatioAbs, right1Location, generalStyle, false, throttleFill);
             break;
         case 2:
             // two on the right
-            drawTopBottomUIElement(fillRatioAbs, top1Location, TopBottomStyles.STEERING, steeringFill);
+            drawTopBottomUIElement(fillRatioAbs, top1Location, steeringStyle, steeringFill);
             drawLeftRightUIElement(fillRatioAbs, right1Location, generalStyle, false, brakeFill);
             drawLeftRightUIElement(fillRatioAbs, right2Location, generalStyle, false, throttleFill);
             break;
@@ -339,11 +364,11 @@ function draw(currentTimeMillis) {
             // two on the top
             drawTopBottomUIElement(fillRatioAbs, top1Location, generalStyle, brakeFill);
             drawTopBottomUIElement(fillRatioAbs, top2Location, generalStyle, throttleFill);
-            drawTopBottomUIElement(fillRatioAbs, bottom1Location, TopBottomStyles.STEERING, steeringFill);
+            drawTopBottomUIElement(fillRatioAbs, bottom1Location, steeringStyle, steeringFill);
             break;
         case 4:
             // one on top, one on bottom
-            drawTopBottomUIElement(fillRatioAbs, top1Location, TopBottomStyles.STEERING, steeringFill);
+            drawTopBottomUIElement(fillRatioAbs, top1Location, steeringStyle, steeringFill);
             drawTopBottomUIElement(fillRatioAbs, bottom1Location, generalStyle, throttleFill);
             drawTopBottomUIElement(fillRatioAbs, bottom2Location, generalStyle, brakeFill);
             break;
@@ -534,6 +559,23 @@ function drawVerticalBar(
     ctx.lineTo(leftX + w/2, innerBottomY - fillRatio * (h - (w - barSize)));
     ctx.stroke();
 
+    if (imagesLoaded) {
+        let x = leftX + w/2 - iconSize/2;
+        let y = topY + h + 10;
+        if ([throttleFill, brakeFill].includes(fill)) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.beginPath();
+            ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+            ctx.fill();
+            
+            if (fill === throttleFill) {
+                ctx.drawImage(speedometerCanvas, x, y);
+            } else if (fill === brakeFill) {
+                ctx.drawImage(discBrakeCanvas, x, y);
+            }
+        }
+    }
+
     // Outline draw area
     // ctx.strokeStyle = "white";
     // ctx.lineWidth = 2;
@@ -595,6 +637,23 @@ function drawRoundedVerticalBar(
     dtx.drawImage(sourceCanvas, 0, 0);
 
     ctx.drawImage(destinationCanvas, leftX, topY);
+
+    if (imagesLoaded) {
+        let x = leftX + w/2 - iconSize/2;
+        let y = topY + h + 10;
+        if ([throttleFill, brakeFill].includes(fill)) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.beginPath();
+            ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+            ctx.fill();
+            
+            if (fill === throttleFill) {
+                ctx.drawImage(speedometerCanvas, x, y);
+            } else if (fill === brakeFill) {
+                ctx.drawImage(discBrakeCanvas, x, y);
+            }
+        }
+    }
 
     // Outline the draw area
     // ctx.lineWidth = 2;
@@ -678,6 +737,25 @@ function drawVerticalSegmentedBar(
         actualHeight,
     );
 
+    ctx.drawImage(destinationCanvas, leftX, topY);
+
+    if (imagesLoaded) {
+        let x = leftX + w/2 - iconSize/2;
+        let y = topY + h + 10;
+        if ([throttleFill, brakeFill].includes(fill)) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.beginPath();
+            ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+            ctx.fill();
+            
+            if (fill === throttleFill) {
+                ctx.drawImage(speedometerCanvas, x, y);
+            } else if (fill === brakeFill) {
+                ctx.drawImage(discBrakeCanvas, x, y);
+            }
+        }
+    }
+
     // Outline the draw area
     // ctx.strokeStyle = "white";
     // ctx.lineWidth = 2;
@@ -687,8 +765,6 @@ function drawVerticalSegmentedBar(
     //     w,
     //     actualHeight,
     // );
-
-    ctx.drawImage(destinationCanvas, leftX, topY);
 
     // Clear the helper canvases so other draw methods can reuse it
     dtx.globalCompositeOperation = "source-over";
@@ -705,6 +781,29 @@ function drawHorizontalBar(
     topY,
     fill,
 ) {
+    if (imagesLoaded) {
+        let x = centerX - w/2;
+        let y = topY - 4;
+        if ([throttleFill, brakeFill, steeringFill].includes(fill)) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.beginPath();
+            ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+            ctx.fill();
+            
+            if (fill === throttleFill) {
+                ctx.drawImage(speedometerCanvas, x, y);
+            } else if (fill === brakeFill) {
+                ctx.drawImage(discBrakeCanvas, x, y);
+            } else if (fill === steeringFill) {
+                ctx.drawImage(steeringWheelCanvas, x, y);
+            }
+        }
+    }
+
+    let iconSpace = iconSize + 14;
+    w = w - iconSpace;
+    centerX += iconSpace / 2;
+
     // Background
     ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
     ctx.fillRect(
@@ -743,6 +842,29 @@ function drawHorizontalRoundedBar(
     topY,
     fill,
 ) {
+    if (imagesLoaded) {
+        let x = centerX - w/2;
+        let y = topY - 4;
+        if ([throttleFill, brakeFill, steeringFill].includes(fill)) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.beginPath();
+            ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+            ctx.fill();
+            
+            if (fill === throttleFill) {
+                ctx.drawImage(speedometerCanvas, x, y);
+            } else if (fill === brakeFill) {
+                ctx.drawImage(discBrakeCanvas, x, y);
+            } else if (fill === steeringFill) {
+                ctx.drawImage(steeringWheelCanvas, x, y);
+            }
+        }
+    }
+
+    let iconSpace = iconSize + 14;
+    w = w - iconSpace;
+    centerX += iconSpace / 2;
+
     let innerHeight = 0.4*h;
     let innerWidth = w - h + innerHeight;
     let centerY = topY + h/2;
@@ -842,33 +964,6 @@ function drawSteeringSplitBar(
     }
 }
 
-function drawHorizontalSteeringBar(
-    fillRatio,
-    w,
-    h,
-    centerX,
-    topY,
-    fill,
-) {
-    if (imagesLoaded) {
-        ctx.drawImage(
-            steeringWheelCanvas,
-            centerX - w/2,
-            topY - 4,
-        );
-    }
-
-    let steeringWheelSpace = steeringWheelCanvas.width + 14;
-    drawHorizontalBar(
-        w - steeringWheelSpace,
-        h,
-        fillRatio,
-        centerX + steeringWheelSpace / 2,
-        topY,
-        fill,
-    );
-}
-
 function drawHorizontalSegmentedBar(
     w,
     h,
@@ -877,6 +972,29 @@ function drawHorizontalSegmentedBar(
     topY,
     fill,
 ) {
+    if (imagesLoaded) {
+        let x = centerX - w/2;
+        let y = topY - 4;
+        if ([throttleFill, brakeFill, steeringFill].includes(fill)) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.beginPath();
+            ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+            ctx.fill();
+            
+            if (fill === throttleFill) {
+                ctx.drawImage(speedometerCanvas, x, y);
+            } else if (fill === brakeFill) {
+                ctx.drawImage(discBrakeCanvas, x, y);
+            } else if (fill === steeringFill) {
+                ctx.drawImage(steeringWheelCanvas, x, y);
+            }
+        }
+    }
+
+    let iconSpace = iconSize + 14;
+    w = w - iconSpace;
+    centerX += iconSpace / 2;
+
     let b = 5; // bar width
     let g = 7; // gap width
     let n = Math.round(w / (b + g)) - 1; // number of bars
@@ -1019,6 +1137,23 @@ function drawLeftCircularBar(
     ctx.closePath();
     ctx.fill();
 
+    if (imagesLoaded) {
+        let x = centerX - radius;
+        let y = centerY + h/2 + 10;
+        if ([throttleFill, brakeFill].includes(fill)) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.beginPath();
+            ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+            ctx.fill();
+
+            if (fill === throttleFill) {
+                ctx.drawImage(speedometerCanvas, x, y);
+            } else if (fill === brakeFill) {
+                ctx.drawImage(discBrakeCanvas, x, y);
+            }
+        }
+    }
+
     // Outline the draw area
     // ctx.strokeStyle = "white";
     // ctx.lineWidth = 2;
@@ -1156,6 +1291,23 @@ function drawLeftCircularSegmentedBar(
     let topY = centerY + radius * Math.sin(-outerAngle);
     ctx.drawImage(destinationCanvas, leftX, topY);
 
+    if (imagesLoaded) {
+        let x = centerX - radius;
+        let y = centerY + h/2 + 10;
+        if ([throttleFill, brakeFill].includes(fill)) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.beginPath();
+            ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+            ctx.fill();
+
+            if (fill === throttleFill) {
+                ctx.drawImage(speedometerCanvas, x, y);
+            } else if (fill === brakeFill) {
+                ctx.drawImage(discBrakeCanvas, x, y);
+            }
+        }
+    }
+
     // Outline the draw area
     // ctx.strokeStyle = "white";
     // ctx.lineWidth = 2;
@@ -1269,6 +1421,23 @@ function drawLeftCircularRoundedBar(
         bHeight,
     );
 
+    if (imagesLoaded) {
+        let x = centerX - radius;
+        let y = centerY + h/2 + 10;
+        if ([throttleFill, brakeFill].includes(fill)) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.beginPath();
+            ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+            ctx.fill();
+
+            if (fill === throttleFill) {
+                ctx.drawImage(speedometerCanvas, x, y);
+            } else if (fill === brakeFill) {
+                ctx.drawImage(discBrakeCanvas, x, y);
+            }
+        }
+    }
+
     // Outline the draw area
     // ctx.strokeStyle = "white";
     // ctx.lineWidth = 2;
@@ -1355,6 +1524,23 @@ function drawRightCircularBar(
     );
     ctx.closePath();
     ctx.fill();
+
+    if (imagesLoaded) {
+        let x = centerX + radius - iconSize;
+        let y = centerY + h/2 + 10;
+        if ([throttleFill, brakeFill, steeringFill].includes(fill)) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.beginPath();
+            ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+            ctx.fill();
+
+            if (fill === throttleFill) {
+                ctx.drawImage(speedometerCanvas, x, y);
+            } else if (fill === brakeFill) {
+                ctx.drawImage(discBrakeCanvas, x, y);
+            }
+        }
+    }
 
     // Outline draw area
     // ctx.strokeStyle = "white";
@@ -1492,6 +1678,23 @@ function drawRightCircularSegmentedBar(
     let topY = centerY + radius * Math.sin(-outerAngle);
     ctx.drawImage(destinationCanvas, leftX, topY);
 
+    if (imagesLoaded) {
+        let x = centerX + radius - iconSize;
+        let y = centerY + h/2 + 10;
+        if ([throttleFill, brakeFill, steeringFill].includes(fill)) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.beginPath();
+            ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+            ctx.fill();
+
+            if (fill === throttleFill) {
+                ctx.drawImage(speedometerCanvas, x, y);
+            } else if (fill === brakeFill) {
+                ctx.drawImage(discBrakeCanvas, x, y);
+            }
+        }
+    }
+
     // Outline the draw area
     // ctx.lineWidth = 2;
     // ctx.strokeStyle = "white";
@@ -1603,6 +1806,25 @@ function drawRightCircularRoundedBar(
         bHeight,
     );
 
+    ctx.drawImage(destinationCanvas, leftX, topY);
+
+    if (imagesLoaded) {
+        let x = centerX + radius - iconSize;
+        let y = centerY + h/2 + 10;
+        if ([throttleFill, brakeFill, steeringFill].includes(fill)) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.beginPath();
+            ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+            ctx.fill();
+
+            if (fill === throttleFill) {
+                ctx.drawImage(speedometerCanvas, x, y);
+            } else if (fill === brakeFill) {
+                ctx.drawImage(discBrakeCanvas, x, y);
+            }
+        }
+    }
+
     // Outline the draw area
     // ctx.strokeStyle = "white";
     // ctx.lineWidth = 2;
@@ -1624,8 +1846,6 @@ function drawRightCircularRoundedBar(
     // );
     // ctx.closePath();
     // ctx.stroke();
-
-    ctx.drawImage(destinationCanvas, leftX, topY);
     
     // Clear the helper canvases so other draw methods can reuse it
     dtx.globalCompositeOperation = "source-over";
@@ -1636,7 +1856,6 @@ function drawRightCircularRoundedBar(
 
 function drawTopRightLogoBar(
     w,
-    h,
     centerX,
     centerY,
     fillRatio,
@@ -1711,13 +1930,25 @@ function drawTopRightLogoBar(
         maskSize,
         maskSize,
     );
+    
+    ctx.drawImage(destinationCanvas, leftX, topY);
+
+    if (imagesLoaded) {
+        let x = centerX + radius - w/2;
+        let y = centerY + 20;
+
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.beginPath();
+        ctx.arc(x + iconSize/2, y + iconSize/2, iconSize * 0.65, 0, 2*Math.PI);
+        ctx.fill();
+
+        ctx.drawImage(brainCanvas, x, y);
+    }
 
     // Outline the draw area
     // ctx.strokeStyle = "white";
     // ctx.lineWidth = 2;
     // ctx.strokeRect(leftX, topY, radius + 2*innerLineWidth, radius + 2*innerLineWidth);
-
-    ctx.drawImage(destinationCanvas, leftX, topY);
     
     // Clear the helper canvases so other draw methods can reuse it
     dtx.globalCompositeOperation = "source-over";

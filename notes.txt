@@ -34,7 +34,10 @@ x powered by vanilla.js
 x make a circular bar around the top right logo
 x move the bars in when the current speed is two or fewer digits
 x make the fill handle aligned better on Brave specifically
-note at the top of the screen that it's designed to display the screen at native resolution
+x note at the top of the screen that it's designed to display the screen at native resolution
+display brake icon
+display throttle icon
+display confidence icon
 try getting the controls to appear to the right, rather than below?
 make all my components draggable?
 figure out the right bWidth, it's certainly not 1000?
